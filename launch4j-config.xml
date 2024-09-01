@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch4jConfig>
+    <headerType>gui</headerType>
+    <jar>./build/libs/FTLAutoSaveManager-1.0-SNAPSHOT.jar</jar> <!-- Path to your JAR file -->
+    <outfile>./dist/FTLautosave.exe</outfile>
+    <errTitle>Application Error</errTitle>
+    <cmdLine></cmdLine>
+    <chdir>.</chdir>
+    <icon>./bg.ico</icon>
+    <minVersion>0.0.0</minVersion>
+    <jdkMinVersion>1.8.0</jdkMinVersion>
+    <jre>
+        <minVersion>11</minVersion>
+    </jre>
+</launch4jConfig>

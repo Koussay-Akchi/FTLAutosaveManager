@@ -5,7 +5,7 @@ plugins {
 group 'com.akchi'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = '11' // or whichever version you're using
+sourceCompatibility = '11'
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ tasks.withType(JavaCompile) {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'com.example.FTLAutosaveGUI' // Replace with the fully qualified name of your main class
+                'Main-Class': 'com.akchi.FTLAutosaveManager'
         )
     }
 }
