@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group 'com.akchi'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = '11' // Use your preferred Java version
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Add the dependency for org.json
+    implementation 'org.json:json:20210307'
+
+    // You can add other dependencies here
+}
+
+test {
+    useJUnitPlatform()
+}
