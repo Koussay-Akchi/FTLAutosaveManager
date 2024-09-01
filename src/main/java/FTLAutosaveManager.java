@@ -32,7 +32,7 @@ public class FTLAutosaveManager extends JFrame {
 
     public FTLAutosaveManager() {
         setTitle("FTL Autosave Manager");
-        setSize(600, 400);
+        setSize(640, 360);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Set a custom icon if available
@@ -50,7 +50,7 @@ public class FTLAutosaveManager extends JFrame {
         JLabel backgroundLabel = new JLabel();
         backgroundLabel.setBounds(0, 0, getWidth(), getHeight());
         try {
-            File file = new File("bg.jpg"); // Root folder of the project
+            File file = new File("bg_small.jpg"); // Root folder of the project
             BufferedImage bgImage = ImageIO.read(file);
             backgroundLabel.setIcon(new ImageIcon(bgImage));
         } catch (IOException e) {
@@ -139,6 +139,19 @@ public class FTLAutosaveManager extends JFrame {
         autosaveFile = new File(userHome, "AppData/Roaming/FTLautosave.json");
 
         ensureFoldersExist();
+
+        // Center the window
+        centerWindow();
+    }
+
+    private void centerWindow() {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gd = ge.getDefaultScreenDevice();
+        GraphicsConfiguration gc = gd.getDefaultConfiguration();
+        Dimension screenSize = gc.getBounds().getSize();
+        int x = (screenSize.width - getWidth()) / 2;
+        int y = (screenSize.height - getHeight()) / 2;
+        setLocation(x, y);
     }
 
     private String getShortcutPath() {
