@@ -66,6 +66,7 @@ public class FTLAutosaveManager extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel intervalLabel = new JLabel("Autosave Interval:");
+        intervalLabel.setForeground(Color.WHITE);
         gbc.gridx = 0;
         gbc.gridy = 0;
         controlPanel.add(intervalLabel, gbc);
@@ -77,8 +78,9 @@ public class FTLAutosaveManager extends JFrame {
                 updateSpinnerSuffix();
             }
         });
-        gbc.gridx = 1;
-        gbc.gridy = 0;
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
         controlPanel.add(intervalSpinner, gbc);
 
         playButton = new JButton("Play");
@@ -89,7 +91,7 @@ public class FTLAutosaveManager extends JFrame {
             }
         });
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 2;
         controlPanel.add(playButton, gbc);
 
         restartButton = new JButton("Restart");
@@ -100,7 +102,7 @@ public class FTLAutosaveManager extends JFrame {
             }
         });
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         controlPanel.add(restartButton, gbc);
 
         restoreButton = new JButton("Restore Backup");
@@ -111,7 +113,7 @@ public class FTLAutosaveManager extends JFrame {
             }
         });
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         controlPanel.add(restoreButton, gbc);
 
         exitButton = new JButton("Exit");
@@ -122,11 +124,11 @@ public class FTLAutosaveManager extends JFrame {
             }
         });
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         controlPanel.add(exitButton, gbc);
 
         controlPanel.setOpaque(false); // Make sure the panel is transparent
-        controlPanel.setBounds(400, 0, 200, 400); // Adjust size and position as needed
+        controlPanel.setBounds(440, 0, 200, 350); // Adjust size and position as needed
         layeredPane.add(controlPanel, JLayeredPane.PALETTE_LAYER); // Ensure the controlPanel is on top
 
         updateButtonStates();
