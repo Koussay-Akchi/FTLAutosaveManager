@@ -58,6 +58,15 @@ public class FTLAutosaveManager extends JFrame {
         }
         layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
 
+        Font customFont = null;
+        try {
+            customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/C&C Red Alert [INET].ttf")).deriveFont(16f); // Adjust size as needed
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Create the control panel with buttons
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new GridBagLayout());
@@ -65,13 +74,17 @@ public class FTLAutosaveManager extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel intervalLabel = new JLabel("Autosave Interval:");
+        JLabel intervalLabel = new JLabel("Autosave Interval :");
         intervalLabel.setForeground(Color.WHITE);
+        intervalLabel.setFont(customFont);
+        assert customFont != null;
+        intervalLabel.setFont(customFont.deriveFont(20f));
         gbc.gridx = 0;
         gbc.gridy = 0;
         controlPanel.add(intervalLabel, gbc);
 
         intervalSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
+        intervalSpinner.setFont(customFont); // Set custom font
         intervalSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -84,6 +97,7 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.add(intervalSpinner, gbc);
 
         playButton = new JButton("Play");
+        playButton.setFont(customFont); // Set custom font
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,6 +109,7 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.add(playButton, gbc);
 
         restartButton = new JButton("Restart");
+        restartButton.setFont(customFont); // Set custom font
         restartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,6 +121,7 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.add(restartButton, gbc);
 
         restoreButton = new JButton("Restore Backup");
+        restoreButton.setFont(customFont); // Set custom font
         restoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -117,6 +133,7 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.add(restoreButton, gbc);
 
         exitButton = new JButton("Exit");
+        exitButton.setFont(customFont); // Set custom font
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
