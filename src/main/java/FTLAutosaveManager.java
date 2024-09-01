@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -33,7 +34,6 @@ public class FTLAutosaveManager extends JFrame {
         setTitle("FTL Autosave Manager");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
 
         // Set a custom icon if available
         try {
@@ -42,8 +42,25 @@ public class FTLAutosaveManager extends JFrame {
             System.out.println("Icon not found.");
         }
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridBagLayout());
+        // Create a JLayeredPane and set it as the content pane
+        JLayeredPane layeredPane = new JLayeredPane();
+        setContentPane(layeredPane);
+
+        // Background image setup
+        JLabel backgroundLabel = new JLabel();
+        backgroundLabel.setBounds(0, 0, getWidth(), getHeight());
+        try {
+            File file = new File("bg.jpg"); // Root folder of the project
+            BufferedImage bgImage = ImageIO.read(file);
+            backgroundLabel.setIcon(new ImageIcon(bgImage));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
+
+        // Create the control panel with buttons
+        JPanel controlPanel = new JPanel();
+        controlPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -51,7 +68,7 @@ public class FTLAutosaveManager extends JFrame {
         JLabel intervalLabel = new JLabel("Autosave Interval:");
         gbc.gridx = 0;
         gbc.gridy = 0;
-        panel.add(intervalLabel, gbc);
+        controlPanel.add(intervalLabel, gbc);
 
         intervalSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
         intervalSpinner.addChangeListener(new ChangeListener() {
@@ -62,7 +79,7 @@ public class FTLAutosaveManager extends JFrame {
         });
         gbc.gridx = 1;
         gbc.gridy = 0;
-        panel.add(intervalSpinner, gbc);
+        controlPanel.add(intervalSpinner, gbc);
 
         playButton = new JButton("Play");
         playButton.addActionListener(new ActionListener() {
@@ -73,7 +90,7 @@ public class FTLAutosaveManager extends JFrame {
         });
         gbc.gridx = 0;
         gbc.gridy = 1;
-        panel.add(playButton, gbc);
+        controlPanel.add(playButton, gbc);
 
         restartButton = new JButton("Restart");
         restartButton.addActionListener(new ActionListener() {
@@ -84,7 +101,7 @@ public class FTLAutosaveManager extends JFrame {
         });
         gbc.gridx = 0;
         gbc.gridy = 2;
-        panel.add(restartButton, gbc);
+        controlPanel.add(restartButton, gbc);
 
         restoreButton = new JButton("Restore Backup");
         restoreButton.addActionListener(new ActionListener() {
@@ -95,7 +112,7 @@ public class FTLAutosaveManager extends JFrame {
         });
         gbc.gridx = 0;
         gbc.gridy = 3;
-        panel.add(restoreButton, gbc);
+        controlPanel.add(restoreButton, gbc);
 
         exitButton = new JButton("Exit");
         exitButton.addActionListener(new ActionListener() {
@@ -106,9 +123,12 @@ public class FTLAutosaveManager extends JFrame {
         });
         gbc.gridx = 0;
         gbc.gridy = 4;
-        panel.add(exitButton, gbc);
+        controlPanel.add(exitButton, gbc);
 
-        add(panel, BorderLayout.EAST);
+        controlPanel.setOpaque(false); // Make sure the panel is transparent
+        controlPanel.setBounds(400, 0, 200, 400); // Adjust size and position as needed
+        layeredPane.add(controlPanel, JLayeredPane.PALETTE_LAYER); // Ensure the controlPanel is on top
+
         updateButtonStates();
 
         // Define folder paths
@@ -262,17 +282,6 @@ public class FTLAutosaveManager extends JFrame {
 
     private String resourcePath(String filename) {
         return new File(System.getProperty("user.home"), filename).getAbsolutePath();
-    }
-
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        try {
-            BufferedImage bgImage = javax.imageio.ImageIO.read(new File(resourcePath("bg.jpg")));
-            g.drawImage(bgImage, 0, 0, this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public static void main(String[] args) {
