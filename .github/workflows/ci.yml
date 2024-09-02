@@ -36,7 +36,10 @@ jobs:
 
       - name: Create EXE with Launch4j
         run: |
-          & "C:\Program Files (x86)\Launch4j\launch4j.exe" launch4j-config.xml 
+          # Find Launch4j installation directory
+          $env:PATH += ";C:\Program Files (x86)\Launch4j" 
+          # Replace path with the correct installation directory if needed
+          & "C:\Program Files (x86)\Launch4j\launch4j.exe" launch4j-config.xml
 
       - name: List contents of libs directory
         run: dir .\build\libs
