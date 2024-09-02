@@ -27,12 +27,13 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Install MinGW
-        run: choco install mingw --version=8.1.0
-
-      - name: Run Launch4j
+      - name: Install Launch4j
         run: |
-          ./launch4j/launch4j.exe ${{ github.workspace }}/launch4j-config.xml
+          choco install launch4j --yes
+
+      - name: Create EXE with Launch4j
+        run: |
+          launch4j launch4j-config.xml
 
       - name: List contents of libs directory
         run: dir .\build\libs
