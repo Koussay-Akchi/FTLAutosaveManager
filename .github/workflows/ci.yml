@@ -22,7 +22,7 @@ jobs:
       - name: Install Gradle
         uses: gradle/gradle-build-action@v3
         with:
-          gradle-version: '8.x'
+          gradle-version: '8.4'
 
       - name: Build with Gradle
         run: ./gradlew build
@@ -52,6 +52,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/FTLautosave.exe # Adjust this path based on your build output
+          asset_path: ./build/outputs/FTLautosave.exe # Adjust this path based on your build output
           asset_name: FTLautosave.exe
           asset_content_type: application/octet-stream
