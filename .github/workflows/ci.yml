@@ -29,7 +29,7 @@ jobs:
 
       - name: Run Launch4j
         run: |
-          ./launch4j/launch4j.exe launch4j-config.xml
+          ./launch4j/launch4j.exe ${{ github.workspace }}/launch4j-config.xml
 
       - name: Create GitHub Release
         id: create_release
