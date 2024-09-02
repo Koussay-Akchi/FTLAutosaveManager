@@ -4,6 +4,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,6 +12,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
+import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Timer;
@@ -84,13 +86,16 @@ public class FTLAutosaveManager extends JFrame {
 
         intervalSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
         intervalSpinner.setFont(customFont);
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(intervalSpinner, "# 'minute'");
+        intervalSpinner.setEditor(editor);
+
         intervalSpinner.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                updateSpinnerSuffix();
+                int value = (Integer) intervalSpinner.getValue();
+                editor.getFormat().applyPattern(value == 1 ? "# 'minute'" : "# 'minutes'");
             }
         });
-
         gbc.gridx = 0;
         gbc.gridy = 1;
         controlPanel.add(intervalSpinner, gbc);
@@ -230,12 +235,6 @@ public class FTLAutosaveManager extends JFrame {
         }
     }
 
-    private void updateSpinnerSuffix() {
-        int value = (int) intervalSpinner.getValue();
-        JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) intervalSpinner.getEditor();
-        editor.getTextField().setColumns(value > 1 ? 7 : 6);
-    }
-
     private void updateButtonStates() {
         restartButton.setEnabled(checkContinueSav(autosaveFolder));
         restoreButton.setEnabled(checkContinueSav(backupFolder));
@@ -352,9 +351,6 @@ public class FTLAutosaveManager extends JFrame {
                 });
     }
 
-    private String resourcePath(String filename) {
-        return new File(System.getProperty("user.home"), filename).getAbsolutePath();
-    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
