@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - main
+      - test
 
 jobs:
   build:
@@ -30,6 +30,9 @@ jobs:
       - name: Install Launch4j
         run: |
           choco install launch4j --yes
+
+      - name: List contents of libs directory
+        run: dir "C:\Program Files (x86)\Launch4j\"
 
       - name: Create EXE with Launch4j
         run: |
