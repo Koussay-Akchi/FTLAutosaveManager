@@ -60,14 +60,13 @@ public class FTLAutosaveManager extends JFrame {
         }
         layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
 
-        Font customFont = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(getClass().getResourceAsStream("/C&C Red Alert [INET].ttf"))).deriveFont(16f);
+        Font customFont = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(getClass().getResourceAsStream("/C&C Red Alert [INET].ttf"))).deriveFont(18f);
         try {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         JPanel controlPanel = new JPanel();
         controlPanel.setLayout(new GridBagLayout());
@@ -104,6 +103,7 @@ public class FTLAutosaveManager extends JFrame {
                 play();
             }
         });
+
         gbc.gridx = 0;
         gbc.gridy = 2;
         controlPanel.add(playButton, gbc);
@@ -116,6 +116,7 @@ public class FTLAutosaveManager extends JFrame {
                 restart();
             }
         });
+
         gbc.gridx = 0;
         gbc.gridy = 3;
         controlPanel.add(restartButton, gbc);
@@ -128,18 +129,21 @@ public class FTLAutosaveManager extends JFrame {
                 restoreBackup();
             }
         });
+
         gbc.gridx = 0;
         gbc.gridy = 4;
         controlPanel.add(restoreButton, gbc);
 
         JButton exitButton = new JButton("Exit");
         exitButton.setFont(customFont);
+        exitButton.setBackground (Color.DARK_GRAY);
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
         });
+
         gbc.gridx = 0;
         gbc.gridy = 5;
         controlPanel.add(exitButton, gbc);
@@ -148,10 +152,33 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.setBounds(440, 0, 200, 350);
         layeredPane.add(controlPanel, JLayeredPane.PALETTE_LAYER);
 
+        // Apply style to buttons
+        styleButton(playButton);
+        styleButton(restartButton);
+        styleButton(restoreButton);
+        styleButton(exitButton);
+
+        // Ensure button colors are updated
+        updateButtonColors();
+
         updateButtonStates();
         ensureFoldersExist();
 
         centerWindow();
+    }
+
+    private void styleButton(JButton button) {
+        button.setBackground(Color.DARK_GRAY); // Dark color for the enabled state
+        button.setForeground(Color.WHITE); // Text color
+        button.setFocusPainted(false); // Remove focus border
+        button.setBorder(BorderFactory.createEmptyBorder()); // Remove border
+        button.setOpaque(true); // Make sure the background color is visible
+    }
+
+    private void updateButtonColors() {
+        playButton.setBackground(playButton.isEnabled() ? Color.DARK_GRAY : new Color(40,  40,  40));
+        restartButton.setBackground(restartButton.isEnabled() ? Color.DARK_GRAY : new Color(40,  40,  40));
+        restoreButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY :new Color(40,  40,  40));
     }
 
     private void centerWindow() {
@@ -212,6 +239,9 @@ public class FTLAutosaveManager extends JFrame {
     private void updateButtonStates() {
         restartButton.setEnabled(checkContinueSav(autosaveFolder));
         restoreButton.setEnabled(checkContinueSav(backupFolder));
+        restartButton.setToolTipText(restartButton.isEnabled() ? null : "Autosave folder is empty");
+        restoreButton.setToolTipText(restartButton.isEnabled() ? null : "Backup folder is empty");
+        updateButtonColors();
     }
 
     private boolean checkContinueSav(File folderPath) {
