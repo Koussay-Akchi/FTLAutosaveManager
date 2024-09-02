@@ -31,19 +31,15 @@ jobs:
         run: |
           choco install launch4j --yes
 
-      - name: List contents of libs directory
+      - name: List contents of l directory
         run: dir "C:\Program Files (x86)\Launch4j\"
-
-      - name: Verify Launch4j Installation
-        run: |
-          where launch4j || echo "Launch4j not found"
 
       - name: Create EXE with Launch4j
         run: |
           # Find Launch4j installation directory
           $env:PATH += ";C:\Program Files (x86)\Launch4j" 
           # Replace path with the correct installation directory if needed
-          & "C:\Program Files (x86)\Launch4j\launch4j.exe" launch4j-config.xml
+          & "C:\Program Files (x86)\Launch4j\launch4j.exe" --verbose launch4j-config.xml
 
       - name: List contents of libs directory
         run: dir .\build\libs
