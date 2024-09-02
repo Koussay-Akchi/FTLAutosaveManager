@@ -33,7 +33,7 @@ jobs:
 
       - name: Create EXE with Launch4j
         run: |
-          launch4j launch4j-config.xml
+          C:\ProgramData\chocolatey\bin\launch4j.exe launch4j-config.xml
 
       - name: Create GitHub Release
         id: create_release
