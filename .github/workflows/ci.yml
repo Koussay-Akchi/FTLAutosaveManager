@@ -36,7 +36,7 @@ jobs:
 
       - name: Create EXE with Launch4j
         run: |
-          cmd /c "C:\Program Files (x86)\Launch4j\launch4j.exe launch4j-config.xml"
+          cmd /c "\"C:\Program Files (x86)\Launch4j\launch4j.exe\" launch4j-config.xml"
 
       - name: List contents of libs directory
         run: dir .\build\libs
