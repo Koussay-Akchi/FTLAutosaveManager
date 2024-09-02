@@ -16,7 +16,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          distribution: 'adopt-openjdk'
+          distribution: 'temurin'
           java-version: '17'
 
       - name: Install Gradle
