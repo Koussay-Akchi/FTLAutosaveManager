@@ -5,11 +5,11 @@
     <img src="images/this_is_fine.png" alt="Image 2" width="400" height="300">
 </div>
 
-Is the game supposed to be hard? Yes,
+Is the game supposed to be hard? Yes.
 
-Are you supposed to lose because of your mistakes? Also yes,
+Are you supposed to lose because of your mistakes? Also yes.
 
-Is that more fun? probably not
+Is that more fun? probably not.
 
 Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! 🛠️
 
