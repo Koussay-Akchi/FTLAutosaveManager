@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'application'
 }
 
 group 'com.akchi'
@@ -12,7 +13,9 @@ repositories {
 }
 
 dependencies {
-    // Add any necessary dependencies here
+    implementation 'com.google.code.gson:gson:2.10.1'
+    implementation 'net.java.dev.jna:jna:5.12.1'
+    implementation 'net.java.dev.jna:jna-platform:5.12.1'
     implementation 'com.google.code.gson:gson:2.10.1'
 }
 
@@ -26,4 +29,8 @@ jar {
                 'Main-Class': 'com.akchi.FTLAutosaveManager'
         )
     }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

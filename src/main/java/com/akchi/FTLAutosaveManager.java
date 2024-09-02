@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 import com.google.gson.JsonObject;
@@ -20,20 +21,20 @@ import com.google.gson.JsonParser;
 public class FTLAutosaveManager extends JFrame {
     private static final long serialVersionUID = 1L;
 
-    private JSpinner intervalSpinner;
-    private JButton playButton;
-    private JButton restartButton;
-    private JButton restoreButton;
-    private JButton exitButton;
+    private final JSpinner intervalSpinner;
+    private final JButton playButton;
+    private final JButton restartButton;
+    private final JButton restoreButton;
 
-    private final File autosaveFolder;
-    private final File backupFolder;
-    private final File ftlFolder;
-    private final File autosaveFile;
+    private final String userHome = System.getProperty("user.home");
+    private final File autosaveFile = new File(userHome, "AppData/Roaming/FTLautosave.json");
+    private final File ftlFolder = new File(userHome, "Documents/My Games/FasterThanLight");
+    private final File autosaveFolder = new File(userHome, "Documents/My Games/autosave");
+    private final File backupFolder = new File(userHome, "Documents/My Games/backup");
 
     private final Timer backupTimer = new Timer(true);
 
-    public FTLAutosaveManager() {
+    public FTLAutosaveManager() throws IOException, FontFormatException {
         setTitle("FTL Autosave Manager");
         setUndecorated(true);
         setSize(640, 360);
@@ -41,30 +42,26 @@ public class FTLAutosaveManager extends JFrame {
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
 
         try {
-            setIconImage(new ImageIcon(resourcePath("bg.ico")).getImage());
+            setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/bg.ico"))).getImage());
         } catch (Exception e) {
             System.out.println("Icon not found.");
         }
 
-
         JLayeredPane layeredPane = new JLayeredPane();
         setContentPane(layeredPane);
-
 
         JLabel backgroundLabel = new JLabel();
         backgroundLabel.setBounds(0, 0, getWidth(), getHeight());
         try {
-            File file = new File("bg_small.jpg");
-            BufferedImage bgImage = ImageIO.read(file);
+            BufferedImage bgImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/bg_small.jpg")));
             backgroundLabel.setIcon(new ImageIcon(bgImage));
         } catch (IOException e) {
             e.printStackTrace();
         }
         layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
 
-        Font customFont = null;
+        Font customFont = Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(getClass().getResourceAsStream("/C&C Red Alert [INET].ttf"))).deriveFont(16f);
         try {
-            customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/C&C Red Alert [INET].ttf")).deriveFont(16f);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
         } catch (Exception e) {
@@ -81,7 +78,6 @@ public class FTLAutosaveManager extends JFrame {
         JLabel intervalLabel = new JLabel("Autosave Interval :");
         intervalLabel.setForeground(Color.WHITE);
         intervalLabel.setFont(customFont);
-        assert customFont != null;
         intervalLabel.setFont(customFont.deriveFont(20f));
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -136,7 +132,7 @@ public class FTLAutosaveManager extends JFrame {
         gbc.gridy = 4;
         controlPanel.add(restoreButton, gbc);
 
-        exitButton = new JButton("Exit");
+        JButton exitButton = new JButton("Exit");
         exitButton.setFont(customFont);
         exitButton.addActionListener(new ActionListener() {
             @Override
@@ -153,16 +149,7 @@ public class FTLAutosaveManager extends JFrame {
         layeredPane.add(controlPanel, JLayeredPane.PALETTE_LAYER);
 
         updateButtonStates();
-
-
-        String userHome = System.getProperty("user.home");
-        ftlFolder = new File(userHome, "Documents/My Games/FasterThanLight");
-        autosaveFolder = new File(userHome, "Documents/My Games/autosave");
-        backupFolder = new File(userHome, "Documents/My Games/backup");
-        autosaveFile = new File(userHome, "AppData/Roaming/FTLautosave.json");
-
         ensureFoldersExist();
-
 
         centerWindow();
     }
@@ -231,6 +218,21 @@ public class FTLAutosaveManager extends JFrame {
         return new File(folderPath, "continue.sav").isFile();
     }
 
+    private String resolveShortcutTarget(String shortcutPath) {
+        try {
+            String command = String.format("powershell -Command \"(New-Object -ComObject WScript.Shell).CreateShortcut('%s').TargetPath\"", shortcutPath);
+            Process process = Runtime.getRuntime().exec(command);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String targetPath = reader.readLine().trim();
+            reader.close();
+            process.waitFor();
+            return targetPath;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private void play() {
         String shortcutPath = getShortcutPath();
         if (shortcutPath == null) {
@@ -239,28 +241,32 @@ public class FTLAutosaveManager extends JFrame {
         }
 
         try {
+            String targetPath = resolveShortcutTarget(shortcutPath);
+            if (targetPath == null) {
+                JOptionPane.showMessageDialog(this, "Failed to resolve shortcut target.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             if (!checkContinueSav(autosaveFolder)) {
-                cleanAndCopy(ftlFolder, autosaveFolder);
+                copyFolder(ftlFolder, autosaveFolder);
             }
             if (!checkContinueSav(backupFolder)) {
-                cleanAndCopy(ftlFolder, backupFolder);
+                copyFolder(ftlFolder, backupFolder);
             }
 
             int intervalMinutes = (int) intervalSpinner.getValue();
+            System.out.println("Backup interval set to " + intervalMinutes + " minutes.");
             backupTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    try {
-                        copyFolder(autosaveFolder, backupFolder);
-                        copyFolder(ftlFolder, autosaveFolder);
-                        System.out.println("Backup and copy operation completed.");
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    copyFolder(ftlFolder, autosaveFolder);
+                    copyFolder(autosaveFolder, backupFolder);
+                    System.out.println("Backup and copy operation completed.");
+                    updateButtonStates();
                 }
-            }, 0, intervalMinutes * 60 * 1000);
+            }, 0, (long) intervalMinutes * 60 * 1000);
 
-            Runtime.getRuntime().exec(shortcutPath);
+            Runtime.getRuntime().exec(targetPath);
             System.out.println("FTL has been launched successfully.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -288,10 +294,10 @@ public class FTLAutosaveManager extends JFrame {
         }
     }
 
-    private void cleanAndCopy(File sourceFolder, File targetFolder) {
+    private void copyFolder(File sourceFolder, File targetFolder) {
         try {
             deleteFolder(targetFolder);
-            copyFolder(sourceFolder, targetFolder);
+            copyFiles(sourceFolder, targetFolder);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -304,7 +310,7 @@ public class FTLAutosaveManager extends JFrame {
                 .forEach(File::delete);
     }
 
-    private void copyFolder(File source, File target) throws IOException {
+    private void copyFiles(File source, File target) throws IOException {
         Files.walk(source.toPath())
                 .forEach(sourcePath -> {
                     Path targetPath = target.toPath().resolve(source.toPath().relativize(sourcePath));
@@ -322,7 +328,12 @@ public class FTLAutosaveManager extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            FTLAutosaveManager frame = new FTLAutosaveManager();
+            FTLAutosaveManager frame = null;
+            try {
+                frame = new FTLAutosaveManager();
+            } catch (IOException | FontFormatException e) {
+                throw new RuntimeException(e);
+            }
             frame.setVisible(true);
         });
     }
