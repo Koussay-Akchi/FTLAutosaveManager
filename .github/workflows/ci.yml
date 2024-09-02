@@ -34,6 +34,10 @@ jobs:
       - name: List contents of libs directory
         run: dir "C:\Program Files (x86)\Launch4j\"
 
+      - name: Verify Launch4j Installation
+        run: |
+          where launch4j || echo "Launch4j not found"
+
       - name: Create EXE with Launch4j
         run: |
           # Find Launch4j installation directory
