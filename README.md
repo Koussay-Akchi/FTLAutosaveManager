@@ -16,8 +16,8 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! 🛠�
 ## 🚀 Features
 
 - **Autosave Interval**: Customize how often you want your autosaves.
-- **Backup Management**: Keep your backups in check. Never lose progress again!
-- **One-Click Restart & Restore**: Need a fresh start or want to restore from a backup? Done and done.
+- **Backup Management**: Keep your backups in check. automatic tagged backups.
+- **One-Click Restart & Restore**: Quickly get a fresh start or want to restore from a backup.
 
 ## 🛠️ Usage
 
@@ -34,26 +34,26 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! 🛠�
 
 **OR**
 
-1. Clone the Repo and Build:**
+1. **Clone the Repo** :
 
     ```bash
-    git clone https://github.com/Koussay-Akchi/FTLautosave.git
-    cd FTLautosave
+    git clone https://github.com/Koussay-Akchi/FTLAutosaveManager.git
+    cd FTLAutosaveManager
     ```
 
-2. **Build**:
+2. **Build** :
 
     ```bash
     .\gradlew build
     ```
 
-3. **Package**:
+3. **Package** :
 
     ```bash
     launch4jc.exe .\launch4j-config.xml
     ```
 
-4. **Run the App**:
+4. **Run the App** :
 
     ```bash
     .\dist\FTL Autosave Manager.exe
