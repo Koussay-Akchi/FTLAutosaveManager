@@ -38,10 +38,15 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! ðŸ› ï¸
 2. **Build**:
 
     ```bash
-    .\build.bat
+    .\gradlew build
+    ```
+3. **Package**:
+
+    ```bash
+    launch4jc.exe .\launch4j-config.xml
     ```
 
-3. **Run the App**:
+4. **Run the App**:
 
     ```bash
     .\dist\autosave.exe
