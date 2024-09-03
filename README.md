@@ -17,7 +17,7 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! 🛠�
 
 - **Autosave Interval**: Customize how often you want your autosaves.
 - **Backup Management**: Keep your backups in check. automatic tagged backups.
-- **One-Click Restart & Restore**: Quickly get a fresh start or want to restore from a backup.
+- **One-Click Restart & Restore**: Quickly get a fresh start or restore from a backup.
 
 ## 🛠️ Usage
 
