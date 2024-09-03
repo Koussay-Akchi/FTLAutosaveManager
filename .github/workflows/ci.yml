@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - main
+      - test
 
 jobs:
   release:
@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Zip the .exe file
+        run: |
+          zip -r "FTL Autosave Manager.zip" "./dist/FTL Autosave Manager.exe"
 
       - name: Create GitHub Release
         id: create_release
@@ -30,6 +34,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/FTL Autosave Manager.exe
-          asset_name: FTL Autosave Manager.exe
-          asset_content_type: application/octet-stream
+          asset_path: "./FTL Autosave Manager.zip"
+          asset_name: "FTL Autosave Manager.zip"
+          asset_content_type: application/zip
