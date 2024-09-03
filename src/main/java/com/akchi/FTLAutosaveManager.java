@@ -10,7 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.nio.file.*;
 import java.util.Comparator;
 import java.util.Objects;
@@ -200,7 +201,7 @@ public class FTLAutosaveManager extends JFrame {
                 e.printStackTrace();
             }
         }
-        return 1;
+        return 5;
     }
 
 
@@ -353,7 +354,7 @@ public class FTLAutosaveManager extends JFrame {
                 @Override
                 public void run() {
                     copyFolder(ftlFolder, autosaveFolder);
-                    copyFolder(autosaveFolder, backupFolder);
+                    createBackup();
                     System.out.println("Backup and copy operation completed.");
                     updateButtonStates();
                 }
@@ -366,6 +367,18 @@ public class FTLAutosaveManager extends JFrame {
             JOptionPane.showMessageDialog(this, "Failed to run FTL. Reason: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             deleteShortcutPath();
         }
+    }
+
+    private void createBackup() {
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
+
+        File datedBackupFolder = new File(backupFolder, timestamp);
+
+        if (!datedBackupFolder.exists()) {
+            datedBackupFolder.mkdirs();
+        }
+
+        copyFolder(autosaveFolder, datedBackupFolder);
     }
 
     private void deleteShortcutPath() {
