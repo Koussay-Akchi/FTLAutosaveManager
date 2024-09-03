@@ -27,6 +27,8 @@ public class FTLAutosaveManager extends JFrame {
     private final JButton playButton;
     private final JButton restartButton;
     private final JButton restoreButton;
+    private final JComboBox<String> backupDropdown;
+    private final JButton cancelButton;
 
     private final String userHome = System.getProperty("user.home");
     private final File autosaveConfigFile = new File(userHome, "AppData/Roaming/FTLAutoSaveManager/autosaveConfig.json");
@@ -87,7 +89,6 @@ public class FTLAutosaveManager extends JFrame {
         int savedInterval = loadIntervalFromConfig();
         intervalSpinner = new JSpinner(new SpinnerNumberModel(savedInterval, 1, 999, 1));
         intervalSpinner.setFont(customFont);
-        //String suffix = ;
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(intervalSpinner, "# '" + (savedInterval == 1 ? "minute" : "minutes") + "'");
         intervalSpinner.setEditor(editor);
 
@@ -134,13 +135,42 @@ public class FTLAutosaveManager extends JFrame {
         restoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                restoreBackup();
+                showRestoreUI();
             }
         });
 
         gbc.gridx = 0;
         gbc.gridy = 4;
         controlPanel.add(restoreButton, gbc);
+
+        backupDropdown = new JComboBox<>();
+        backupDropdown.setFont(customFont);
+        backupDropdown.setVisible(false);
+
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        controlPanel.add(backupDropdown, gbc);
+
+        cancelButton = new JButton("Cancel backup");
+        cancelButton.setFont(customFont);
+        cancelButton.setVisible(false);
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hideRestoreUI();
+            }
+        });
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        controlPanel.add(cancelButton, gbc);
+
+        restoreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showRestoreUI();
+            }
+        });
 
         JButton exitButton = new JButton("Exit");
         exitButton.setFont(customFont);
@@ -153,7 +183,7 @@ public class FTLAutosaveManager extends JFrame {
         });
 
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 7;
         controlPanel.add(exitButton, gbc);
 
         controlPanel.setOpaque(false);
@@ -163,11 +193,14 @@ public class FTLAutosaveManager extends JFrame {
         styleButton(playButton);
         styleButton(restartButton);
         styleButton(restoreButton);
+        styleButton(cancelButton);
         styleButton(exitButton);
 
         updateButtonColors();
         updateButtonStates();
         ensureFoldersExist();
+        cancelButton.setForeground(new Color(132, 119, 119));
+        cancelButton.setBackground(Color.lightGray);
 
         centerWindow();
     }
@@ -204,6 +237,41 @@ public class FTLAutosaveManager extends JFrame {
         return 5;
     }
 
+    private void showRestoreUI() {
+        File[] backupFolders = backupFolder.listFiles(File::isDirectory);
+        if (backupFolders != null && backupFolders.length > 0) {
+            backupDropdown.removeAllItems();
+            for (File folder : backupFolders) {
+                backupDropdown.addItem(folder.getName());
+            }
+            backupDropdown.setVisible(true);
+            cancelButton.setVisible(true);
+            backupDropdown.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    String selectedFolder = (String) backupDropdown.getSelectedItem();
+                    if (selectedFolder != null) {
+                        restoreSelectedBackup(selectedFolder);
+                        updateButtonStates();
+                    }
+                }
+            });
+        } else {
+            JOptionPane.showMessageDialog(this, "No backups available.", "Info", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void hideRestoreUI() {
+        backupDropdown.setVisible(false);
+        cancelButton.setVisible(false);
+    }
+
+    private void restoreSelectedBackup(String folderName) {
+        File selectedBackupFolder = new File(backupFolder, folderName);
+        copyFolder(selectedBackupFolder, ftlFolder);
+        System.out.println("Restored backup from " + folderName);
+        hideRestoreUI();
+    }
 
     private void styleButton(JButton button) {
         button.setBackground(Color.DARK_GRAY);
@@ -217,6 +285,7 @@ public class FTLAutosaveManager extends JFrame {
         playButton.setBackground(playButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
         restartButton.setBackground(restartButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
         restoreButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
+        //cancelButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
     }
 
     private void centerWindow() {
@@ -301,7 +370,8 @@ public class FTLAutosaveManager extends JFrame {
 
     private void updateButtonStates() {
         restartButton.setEnabled(checkContinueSav(autosaveFolder));
-        restoreButton.setEnabled(checkContinueSav(backupFolder));
+        File[] folders = backupFolder.listFiles(File::isDirectory);
+        restoreButton.setEnabled(folders != null && folders.length > 0);
         restartButton.setToolTipText(restartButton.isEnabled() ? null : "Autosave folder is empty");
         restoreButton.setToolTipText(restoreButton.isEnabled() ? null : "Backup folder is empty");
         updateButtonColors();
@@ -327,6 +397,7 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private void play() {
+        ensureFoldersExist();
         String shortcutPath = getShortcutPath();
         if (shortcutPath == null) {
             JOptionPane.showMessageDialog(this, "FTL shortcut not found or not selected.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -399,35 +470,20 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private void restart() {
-        try {
-            deleteFolder(ftlFolder);
-            copyFolder(autosaveFolder, ftlFolder);
-            System.out.println("Restart operation completed successfully.");
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Failed to copy autosave to FTL folder. Reason: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void restoreBackup() {
-        try {
-            deleteFolder(autosaveFolder);
-            copyFolder(backupFolder, autosaveFolder);
-            System.out.println("Restore backup operation completed successfully.");
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Failed to copy backup to autosave folder. Reason: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        copyFolder(autosaveFolder, ftlFolder);
+        System.out.println("Restart operation completed successfully.");
     }
 
     private void copyFolder(File sourceFolder, File targetFolder) {
         try {
-            deleteFolder(targetFolder);
+            deleteFolderContents(targetFolder);
             copyFiles(sourceFolder, targetFolder);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void deleteFolder(File folder) throws IOException {
+    private void deleteFolderContents(File folder) throws IOException {
         Files.walk(folder.toPath())
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
