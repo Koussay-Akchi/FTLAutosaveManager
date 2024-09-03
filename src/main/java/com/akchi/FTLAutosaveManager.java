@@ -13,10 +13,9 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.nio.file.*;
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -109,6 +108,7 @@ public class FTLAutosaveManager extends JFrame {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                SoundPlayer.playSound("click.wav");
                 play();
             }
         });
@@ -122,6 +122,7 @@ public class FTLAutosaveManager extends JFrame {
         restartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                SoundPlayer.playSound("restore.wav");
                 restart();
             }
         });
@@ -135,6 +136,7 @@ public class FTLAutosaveManager extends JFrame {
         restoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                SoundPlayer.playSound("click.wav");
                 showRestoreUI();
             }
         });
@@ -157,6 +159,7 @@ public class FTLAutosaveManager extends JFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                SoundPlayer.playSound("cancel.wav");
                 hideRestoreUI();
             }
         });
@@ -164,13 +167,6 @@ public class FTLAutosaveManager extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 6;
         controlPanel.add(cancelButton, gbc);
-
-        restoreButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showRestoreUI();
-            }
-        });
 
         JButton exitButton = new JButton("Exit");
         exitButton.setFont(customFont);
@@ -195,6 +191,10 @@ public class FTLAutosaveManager extends JFrame {
         styleButton(restoreButton);
         styleButton(cancelButton);
         styleButton(exitButton);
+
+        backupDropdown.setBackground(Color.DARK_GRAY);
+        backupDropdown.setForeground(Color.WHITE);
+        backupDropdown.setOpaque(true);
 
         updateButtonColors();
         updateButtonStates();
@@ -241,17 +241,22 @@ public class FTLAutosaveManager extends JFrame {
         File[] backupFolders = backupFolder.listFiles(File::isDirectory);
         if (backupFolders != null && backupFolders.length > 0) {
             backupDropdown.removeAllItems();
+            backupDropdown.addItem("Select the backup");
+            Arrays.sort(backupFolders, (a, b) -> b.getName().compareTo(a.getName()));
+
             for (File folder : backupFolders) {
                 backupDropdown.addItem(folder.getName());
             }
+
             backupDropdown.setVisible(true);
             cancelButton.setVisible(true);
             backupDropdown.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     String selectedFolder = (String) backupDropdown.getSelectedItem();
-                    if (selectedFolder != null) {
+                    if (selectedFolder != null && !"Select the backup".equals(selectedFolder)) {
                         restoreSelectedBackup(selectedFolder);
+                        SoundPlayer.playSound("restore.wav");
                         updateButtonStates();
                     }
                 }
