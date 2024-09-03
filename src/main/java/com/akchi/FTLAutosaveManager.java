@@ -4,7 +4,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.NumberFormatter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,7 +28,7 @@ public class FTLAutosaveManager extends JFrame {
     private final JButton restoreButton;
 
     private final String userHome = System.getProperty("user.home");
-    private final File autosaveFile = new File(userHome, "AppData/Roaming/FTLautosave.json");
+    private final File autosaveConfigFile = new File(userHome, "AppData/Roaming/FTLAutoSaveManager/autosaveConfig.json");
     private final File ftlFolder = new File(userHome, "Documents/My Games/FasterThanLight");
     private final File autosaveFolder = new File(userHome, "Documents/My Games/autosave");
     private final File backupFolder = new File(userHome, "Documents/My Games/backup");
@@ -84,7 +83,8 @@ public class FTLAutosaveManager extends JFrame {
         gbc.gridy = 0;
         controlPanel.add(intervalLabel, gbc);
 
-        intervalSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 999, 1));
+        int savedInterval = loadIntervalFromConfig();
+        intervalSpinner = new JSpinner(new SpinnerNumberModel(savedInterval, 1, 999, 1));
         intervalSpinner.setFont(customFont);
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(intervalSpinner, "# 'minute'");
         intervalSpinner.setEditor(editor);
@@ -94,6 +94,7 @@ public class FTLAutosaveManager extends JFrame {
             public void stateChanged(ChangeEvent e) {
                 int value = (Integer) intervalSpinner.getValue();
                 editor.getFormat().applyPattern(value == 1 ? "# 'minute'" : "# 'minutes'");
+                saveIntervalToConfig(value);
             }
         });
         gbc.gridx = 0;
@@ -141,7 +142,7 @@ public class FTLAutosaveManager extends JFrame {
 
         JButton exitButton = new JButton("Exit");
         exitButton.setFont(customFont);
-        exitButton.setBackground (Color.DARK_GRAY);
+        exitButton.setBackground(Color.DARK_GRAY);
         exitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -157,33 +158,62 @@ public class FTLAutosaveManager extends JFrame {
         controlPanel.setBounds(440, 0, 200, 350);
         layeredPane.add(controlPanel, JLayeredPane.PALETTE_LAYER);
 
-        // Apply style to buttons
         styleButton(playButton);
         styleButton(restartButton);
         styleButton(restoreButton);
         styleButton(exitButton);
 
-        // Ensure button colors are updated
         updateButtonColors();
-
         updateButtonStates();
         ensureFoldersExist();
 
         centerWindow();
     }
 
+    private void saveIntervalToConfig(int interval) {
+        try {
+            JsonObject json = new JsonObject();
+            json.addProperty("interval", interval);
+            if (autosaveConfigFile.exists()) {
+                JsonObject existingJson = JsonParser.parseReader(new FileReader(autosaveConfigFile)).getAsJsonObject();
+                if (existingJson.has("shortcut_path")) {
+                    json.addProperty("shortcut_path", existingJson.get("shortcut_path").getAsString());
+                }
+            }
+            try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
+                writer.write(json.toString());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int loadIntervalFromConfig() {
+        if (autosaveConfigFile.exists()) {
+            try (FileReader reader = new FileReader(autosaveConfigFile)) {
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                if (json.has("interval")) {
+                    return json.get("interval").getAsInt();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return 1;
+    }
+
     private void styleButton(JButton button) {
-        button.setBackground(Color.DARK_GRAY); // Dark color for the enabled state
-        button.setForeground(Color.WHITE); // Text color
-        button.setFocusPainted(false); // Remove focus border
-        button.setBorder(BorderFactory.createEmptyBorder()); // Remove border
-        button.setOpaque(true); // Make sure the background color is visible
+        button.setBackground(Color.DARK_GRAY);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder());
+        button.setOpaque(true);
     }
 
     private void updateButtonColors() {
-        playButton.setBackground(playButton.isEnabled() ? Color.DARK_GRAY : new Color(40,  40,  40));
-        restartButton.setBackground(restartButton.isEnabled() ? Color.DARK_GRAY : new Color(40,  40,  40));
-        restoreButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY :new Color(40,  40,  40));
+        playButton.setBackground(playButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
+        restartButton.setBackground(restartButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
+        restoreButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
     }
 
     private void centerWindow() {
@@ -197,9 +227,9 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private String getShortcutPath() {
-        if (autosaveFile.exists()) {
+        if (autosaveConfigFile.exists()) {
             try {
-                JsonObject json = JsonParser.parseReader(new FileReader(autosaveFile)).getAsJsonObject();
+                JsonObject json = JsonParser.parseReader(new FileReader(autosaveConfigFile)).getAsJsonObject();
                 String shortcutPath = json.get("shortcut_path").getAsString();
                 if (new File(shortcutPath).exists()) {
                     return shortcutPath;
@@ -214,7 +244,7 @@ public class FTLAutosaveManager extends JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             String shortcutPath = fileChooser.getSelectedFile().getAbsolutePath();
-            try (FileWriter writer = new FileWriter(autosaveFile)) {
+            try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
                 JsonObject json = new JsonObject();
                 json.addProperty("shortcut_path", shortcutPath);
                 writer.write(json.toString());
@@ -233,13 +263,29 @@ public class FTLAutosaveManager extends JFrame {
         if (!backupFolder.exists()) {
             backupFolder.mkdirs();
         }
+        if (!autosaveConfigFile.getParentFile().exists()) {
+            System.out.println("Creating directory: " + autosaveConfigFile.getParentFile().getAbsolutePath());
+            autosaveConfigFile.getParentFile().mkdirs();
+        }
+
+        if (!autosaveConfigFile.exists()) {
+            try {
+                if (autosaveConfigFile.createNewFile()) {
+                    System.out.println("Created file: " + autosaveConfigFile.getAbsolutePath());
+                } else {
+                    System.out.println("File already exists: " + autosaveConfigFile.getAbsolutePath());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private void updateButtonStates() {
         restartButton.setEnabled(checkContinueSav(autosaveFolder));
         restoreButton.setEnabled(checkContinueSav(backupFolder));
         restartButton.setToolTipText(restartButton.isEnabled() ? null : "Autosave folder is empty");
-        restoreButton.setToolTipText(restartButton.isEnabled() ? null : "Backup folder is empty");
+        restoreButton.setToolTipText(restoreButton.isEnabled() ? null : "Backup folder is empty");
         updateButtonColors();
     }
 
@@ -350,7 +396,6 @@ public class FTLAutosaveManager extends JFrame {
                     }
                 });
     }
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
