@@ -86,7 +86,8 @@ public class FTLAutosaveManager extends JFrame {
         int savedInterval = loadIntervalFromConfig();
         intervalSpinner = new JSpinner(new SpinnerNumberModel(savedInterval, 1, 999, 1));
         intervalSpinner.setFont(customFont);
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(intervalSpinner, "# 'minute'");
+        //String suffix = ;
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(intervalSpinner, "# '" + (savedInterval == 1 ? "minute" : "minutes") + "'");
         intervalSpinner.setEditor(editor);
 
         intervalSpinner.addChangeListener(new ChangeListener() {
