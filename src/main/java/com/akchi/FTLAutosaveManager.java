@@ -171,36 +171,31 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private void saveIntervalToConfig(int interval) {
-        try {
-            JsonObject json = new JsonObject();
-            json.addProperty("interval", interval);
-            if (autosaveConfigFile.exists()) {
-                JsonObject existingJson = JsonParser.parseReader(new FileReader(autosaveConfigFile)).getAsJsonObject();
-                if (existingJson.has("shortcut_path")) {
-                    json.addProperty("shortcut_path", existingJson.get("shortcut_path").getAsString());
-                }
-            }
-            try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
-                writer.write(json.toString());
-            }
+        JsonObject json = new JsonObject();
+        json.addProperty("interval", interval);
+
+        try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
+            writer.write(json.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
     private int loadIntervalFromConfig() {
         if (autosaveConfigFile.exists()) {
             try (FileReader reader = new FileReader(autosaveConfigFile)) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                if (json.has("interval")) {
+                if (json != null && json.has("interval") && !json.get("interval").isJsonNull()) {
                     return json.get("interval").getAsInt();
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             }
         }
         return 1;
     }
+
 
     private void styleButton(JButton button) {
         button.setBackground(Color.DARK_GRAY);
@@ -230,11 +225,13 @@ public class FTLAutosaveManager extends JFrame {
         if (autosaveConfigFile.exists()) {
             try {
                 JsonObject json = JsonParser.parseReader(new FileReader(autosaveConfigFile)).getAsJsonObject();
-                String shortcutPath = json.get("shortcut_path").getAsString();
-                if (new File(shortcutPath).exists()) {
-                    return shortcutPath;
+                if (json != null && json.has("shortcut_path") && !json.get("shortcut_path").isJsonNull()) {
+                    String shortcutPath = json.get("shortcut_path").getAsString();
+                    if (new File(shortcutPath).exists()) {
+                        return shortcutPath;
+                    }
                 }
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             }
         }
@@ -255,6 +252,7 @@ public class FTLAutosaveManager extends JFrame {
         }
         return null;
     }
+
 
     private void ensureFoldersExist() {
         if (!autosaveFolder.exists()) {
