@@ -40,3 +40,5 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+build1.bat
+build2.bat

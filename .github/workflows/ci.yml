@@ -6,37 +6,12 @@ on:
       - main
 
 jobs:
-  build:
-    runs-on: windows-latest
+  release:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Set up JDK
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install Gradle
-        uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: '8.4'
-
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: Install Launch4j
-        run: |
-          choco install launch4j --yes
-
-      - name: Create EXE with Launch4j
-        run: |
-          launch4j launch4j-config.xml
-
-      - name: List contents of libs directory
-        run: dir .\build\libs
 
       - name: Create GitHub Release
         id: create_release
@@ -55,6 +30,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/FTLAutosaveManager.exe
+          asset_path: ./dist/FTLAutosaveManager.exe
           asset_name: FTLAutosaveManager.exe
           asset_content_type: application/octet-stream
