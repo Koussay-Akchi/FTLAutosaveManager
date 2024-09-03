@@ -43,7 +43,7 @@ public class FTLAutosaveManager extends JFrame {
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
 
         try {
-            setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/bg.ico"))).getImage());
+            setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/icon.ico"))).getImage());
         } catch (Exception e) {
             System.out.println("Icon not found.");
         }
