@@ -172,6 +172,13 @@ public class FTLAutosaveManager extends JFrame {
 
     private void saveIntervalToConfig(int interval) {
         JsonObject json = new JsonObject();
+        if (autosaveConfigFile.exists()) {
+            try (FileReader reader = new FileReader(autosaveConfigFile)) {
+                json = JsonParser.parseReader(reader).getAsJsonObject();
+            } catch (IOException | IllegalStateException e) {
+                e.printStackTrace();
+            }
+        }
         json.addProperty("interval", interval);
 
         try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
@@ -180,7 +187,6 @@ public class FTLAutosaveManager extends JFrame {
             e.printStackTrace();
         }
     }
-
 
     private int loadIntervalFromConfig() {
         if (autosaveConfigFile.exists()) {
@@ -222,18 +228,31 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private String getShortcutPath() {
+        JsonObject json = new JsonObject();
         if (autosaveConfigFile.exists()) {
-            try {
-                JsonObject json = JsonParser.parseReader(new FileReader(autosaveConfigFile)).getAsJsonObject();
-                if (json != null && json.has("shortcut_path") && !json.get("shortcut_path").isJsonNull()) {
-                    String shortcutPath = json.get("shortcut_path").getAsString();
-                    if (new File(shortcutPath).exists()) {
-                        return shortcutPath;
-                    }
-                }
+            try (FileReader reader = new FileReader(autosaveConfigFile)) {
+                json = JsonParser.parseReader(reader).getAsJsonObject();
             } catch (IOException | IllegalStateException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (json.has("shortcut_path") && !json.get("shortcut_path").isJsonNull()) {
+            String shortcutPath = json.get("shortcut_path").getAsString();
+            if (new File(shortcutPath).exists()) {
+                return shortcutPath;
+            }
+        }
+
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Windows".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         JFileChooser fileChooser = new JFileChooser();
@@ -241,9 +260,8 @@ public class FTLAutosaveManager extends JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             String shortcutPath = fileChooser.getSelectedFile().getAbsolutePath();
+            json.addProperty("shortcut_path", shortcutPath);
             try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
-                JsonObject json = new JsonObject();
-                json.addProperty("shortcut_path", shortcutPath);
                 writer.write(json.toString());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -317,6 +335,7 @@ public class FTLAutosaveManager extends JFrame {
             String targetPath = resolveShortcutTarget(shortcutPath);
             if (targetPath == null) {
                 JOptionPane.showMessageDialog(this, "Failed to resolve shortcut target.", "Error", JOptionPane.ERROR_MESSAGE);
+                deleteShortcutPath();
                 return;
             }
 
@@ -344,6 +363,24 @@ public class FTLAutosaveManager extends JFrame {
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Failed to run FTL. Reason: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            deleteShortcutPath();
+        }
+    }
+
+    private void deleteShortcutPath() {
+        JsonObject json = new JsonObject();
+        if (autosaveConfigFile.exists()) {
+            try (FileReader reader = new FileReader(autosaveConfigFile)) {
+                json = JsonParser.parseReader(reader).getAsJsonObject();
+            } catch (IOException | IllegalStateException e) {
+                e.printStackTrace();
+            }
+        }
+        json.remove("shortcut_path");
+        try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
+            writer.write(json.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

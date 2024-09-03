@@ -30,6 +30,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/FTLAutosaveManager.exe
-          asset_name: FTLAutosaveManager.exe
+          asset_path: ./dist/FTL Autosave Manager.exe
+          asset_name: FTL Autosave Manager.exe
           asset_content_type: application/octet-stream

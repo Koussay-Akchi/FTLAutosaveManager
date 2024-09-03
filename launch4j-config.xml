@@ -3,7 +3,7 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
   <jar>build/libs/FTLAutoSaveManager-1.0-SNAPSHOT.jar</jar>
-  <outfile>/dist/FTLAutosaveManager.exe</outfile>
+  <outfile>/dist/FTL Autosave Manager.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
