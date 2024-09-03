@@ -28,7 +28,13 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! ğŸ› ï¸
 
 ## ğŸ’¾ Installation
 
-1. **Clone the Repo**:
+**1. Download the Ready-to-Use Executable:**
+
+* You can download the pre-built executable from the [Releases page](https://github.com/Koussay-Akchi/FTLAutosaveManager/releases/).
+
+**OR**
+
+1. Clone the Repo and Build:**
 
     ```bash
     git clone https://github.com/Koussay-Akchi/FTLautosave.git
@@ -40,6 +46,7 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! ğŸ› ï¸
     ```bash
     .\gradlew build
     ```
+
 3. **Package**:
 
     ```bash
@@ -49,7 +56,7 @@ Fully automatic 1-click autosave manager for **FTL (Faster Than Light)**! ğŸ› ï¸
 4. **Run the App**:
 
     ```bash
-    .\dist\autosave.exe
+    .\dist\FTL Autosave Manager.exe
     ```
 
 ## ğŸ› Bugs & Issues
