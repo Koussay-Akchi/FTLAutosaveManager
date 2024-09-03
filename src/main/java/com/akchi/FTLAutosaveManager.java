@@ -10,8 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URL;
 import java.nio.file.*;
-import java.text.NumberFormat;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Timer;
@@ -43,7 +43,7 @@ public class FTLAutosaveManager extends JFrame {
         setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 30, 30));
 
         try {
-            setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/icon.ico"))).getImage());
+            setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("icon.png"))).getImage());
         } catch (Exception e) {
             System.out.println("Icon not found.");
         }
