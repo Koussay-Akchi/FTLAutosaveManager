@@ -117,7 +117,7 @@ public class FTLAutosaveManager extends JFrame {
         gbc.gridy = 2;
         controlPanel.add(playButton, gbc);
 
-        restartButton = new JButton("Restart");
+        restartButton = new JButton("Quick restart");
         restartButton.setFont(customFont);
         restartButton.addActionListener(new ActionListener() {
             @Override
@@ -290,7 +290,6 @@ public class FTLAutosaveManager extends JFrame {
         playButton.setBackground(playButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
         restartButton.setBackground(restartButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
         restoreButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
-        //cancelButton.setBackground(restoreButton.isEnabled() ? Color.DARK_GRAY : new Color(40, 40, 40));
     }
 
     private void centerWindow() {
@@ -446,8 +445,7 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private void createBackup() {
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss"));
-
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd, hh-mm a"));
         File datedBackupFolder = new File(backupFolder, timestamp);
 
         if (!datedBackupFolder.exists()) {
