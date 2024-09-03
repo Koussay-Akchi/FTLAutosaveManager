@@ -1,6 +1,9 @@
 package com.akchi;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,8 +43,11 @@ public class FTLAutosaveManager extends JFrame {
     private final File backupFolder = new File(userHome, "Documents/My Games/backup");
 
     private final Timer backupTimer = new Timer(true);
+    private final Map<String, AudioInputStream> soundMap = new HashMap<>();
+
 
     public FTLAutosaveManager() throws IOException, FontFormatException {
+        preloadSounds();
         setTitle("FTL Autosave Manager");
         setUndecorated(true);
         setSize(640, 360);
@@ -112,7 +118,7 @@ public class FTLAutosaveManager extends JFrame {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SoundPlayer.playSound("click.wav");
+                playSound("click.wav");
                 play();
             }
         });
@@ -126,7 +132,7 @@ public class FTLAutosaveManager extends JFrame {
         restartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SoundPlayer.playSound("restore.wav");
+                playSound("restore.wav");
                 restart();
             }
         });
@@ -140,7 +146,7 @@ public class FTLAutosaveManager extends JFrame {
         restoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SoundPlayer.playSound("click.wav");
+                playSound("click.wav");
                 showRestoreUI();
             }
         });
@@ -163,7 +169,7 @@ public class FTLAutosaveManager extends JFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                SoundPlayer.playSound("cancel.wav");
+                playSound("cancel.wav");
                 hideRestoreUI();
             }
         });
@@ -209,6 +215,43 @@ public class FTLAutosaveManager extends JFrame {
         addClickableImage();
         centerWindow();
     }
+
+    private void preloadSounds() {
+        preloadSound("restore.wav");
+        preloadSound("click.wav");
+        preloadSound("cancel.wav");
+    }
+
+    private void preloadSound(String soundFileName) {
+        try (InputStream audioSrc = getClass().getResourceAsStream("/" + soundFileName);
+             InputStream bufferedIn = new BufferedInputStream(audioSrc)) {
+            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
+            soundMap.put(soundFileName, audioStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void playSound(String soundFileName) {
+        try (InputStream audioSrc = getClass().getResourceAsStream("/" + soundFileName)) {
+            assert audioSrc != null;
+            try (InputStream bufferedIn = new BufferedInputStream(audioSrc);
+                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn)) {
+
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioStream);
+                if (clip.isRunning()) {
+                    clip.stop();
+                }
+                clip.setFramePosition(0);
+                clip.start();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private void addClickableImage() {
         JLabel linkLabel = new JLabel();
@@ -287,7 +330,7 @@ public class FTLAutosaveManager extends JFrame {
                     String selectedFolder = (String) backupDropdown.getSelectedItem();
                     if (selectedFolder != null && !"Select the backup".equals(selectedFolder)) {
                         restoreSelectedBackup(selectedFolder);
-                        SoundPlayer.playSound("restore.wav");
+                        playSound("restore.wav");
                         updateButtonStates();
                     }
                 }
