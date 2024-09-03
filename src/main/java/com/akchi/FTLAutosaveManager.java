@@ -7,9 +7,13 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.nio.file.*;
@@ -202,7 +206,34 @@ public class FTLAutosaveManager extends JFrame {
         cancelButton.setForeground(new Color(132, 119, 119));
         cancelButton.setBackground(Color.lightGray);
 
+        addClickableImage();
         centerWindow();
+    }
+
+    private void addClickableImage() {
+        JLabel linkLabel = new JLabel();
+        try {
+            ImageIcon linkIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("github.png")));
+            linkLabel.setIcon(linkIcon);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        linkLabel.setBounds(15, getHeight() - 50, 50, 50);
+        linkLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        linkLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/Koussay-Akchi/FTLautosaveManager"));
+                } catch (IOException | URISyntaxException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        JLayeredPane layeredPane = (JLayeredPane) getContentPane();
+        layeredPane.add(linkLabel, JLayeredPane.PALETTE_LAYER);
     }
 
     private void saveIntervalToConfig(int interval) {
