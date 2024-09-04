@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.nio.file.*;
 import java.util.*;
 import java.util.Timer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.JsonObject;
@@ -278,8 +279,8 @@ public class FTLAutosaveManager extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 try {
                     Desktop.getDesktop().browse(new URI("https://github.com/Koussay-Akchi/FTLautosaveManager"));
-                } catch (IOException | URISyntaxException ex) {
-                    ex.printStackTrace();
+                } catch (IOException | URISyntaxException eUi) {
+                    logger.info(eUi.getMessage());
                 }
             }
         });
@@ -357,7 +358,7 @@ public class FTLAutosaveManager extends JFrame {
     private void restoreSelectedBackup(String folderName) {
         File selectedBackupFolder = new File(backupFolder, folderName);
         copyFolder(selectedBackupFolder, ftlFolder);
-        logger.info("Restored backup from " + folderName);
+        logger.log(Level.INFO, "Restored backup from {0}", folderName);
         hideRestoreUI();
     }
 
@@ -507,7 +508,7 @@ public class FTLAutosaveManager extends JFrame {
             }
 
             int intervalMinutes = (int) intervalSpinner.getValue();
-            logger.info("Backup interval set to " + intervalMinutes + " minutes.");
+            logger.log(Level.INFO, "Backup interval set to {0} minutes.", intervalMinutes);
             backupTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
