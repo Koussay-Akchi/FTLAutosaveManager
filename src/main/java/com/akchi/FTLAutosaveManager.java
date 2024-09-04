@@ -253,7 +253,7 @@ public class FTLAutosaveManager extends JFrame {
             clip.setFramePosition(0);
             clip.start();
         } else {
-            logger.info("Sound not found: " + soundFileName);
+            logger.log(Level.INFO,"Sound not found: " + soundFileName);
         }
     }
 
