@@ -53,7 +53,7 @@ public class FTLAutosaveManager extends JFrame {
     private static final String ERROR_STRING= "Error";
 
     private final Timer backupTimer = new Timer(true);
-    private final Map<String, AudioInputStream> soundMap = new HashMap<>();
+    private final Map<String, Clip> soundMap = new HashMap<>();
 
 
     public FTLAutosaveManager() throws IOException, FontFormatException {
@@ -234,33 +234,29 @@ public class FTLAutosaveManager extends JFrame {
 
     private void preloadSound(String soundFileName) {
         try (InputStream audioSrc = getClass().getResourceAsStream("/" + soundFileName);
-             InputStream bufferedIn = new BufferedInputStream(audioSrc)) {
-            AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-            soundMap.put(soundFileName, audioStream);
+             InputStream bufferedIn = new BufferedInputStream(audioSrc);
+             AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn)) {
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioStream);
+            soundMap.put(soundFileName, clip);
         } catch (Exception e) {
             logger.info(e.getMessage());
         }
     }
 
     private void playSound(String soundFileName) {
-        try (InputStream audioSrc = getClass().getResourceAsStream("/" + soundFileName)) {
-            assert audioSrc != null;
-            try (InputStream bufferedIn = new BufferedInputStream(audioSrc);
-                 AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn)) {
-
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioStream);
-                if (clip.isRunning()) {
-                    clip.stop();
-                }
-                clip.setFramePosition(0);
-                clip.start();
-
+        Clip clip = soundMap.get(soundFileName);
+        if (clip != null) {
+            if (clip.isRunning()) {
+                clip.stop();
             }
-        } catch (Exception e) {
-            logger.info(e.getMessage());
+            clip.setFramePosition(0);
+            clip.start();
+        } else {
+            logger.info("Sound not found: " + soundFileName);
         }
     }
+
 
 
     private void addClickableImage() {
