@@ -1,12 +1,21 @@
 plugins {
     id 'java'
     id 'application'
+    id "org.sonarqube" version "5.0.0.4638"
 }
 
 group 'com.akchi'
 version '1.0-SNAPSHOT'
 
 sourceCompatibility = '11'
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "FTL-Autosave-Manager"
+        property "sonar.host.url", "http://localhost:9000"
+        property "sonar.login", "sqp_5df996032c45f594cbd1f04d6dd2fcffa6a34bb9"
+    }
+}
 
 repositories {
     mavenCentral()

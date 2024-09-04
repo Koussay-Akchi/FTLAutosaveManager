@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.nio.file.*;
 import java.util.*;
 import java.util.Timer;
+import java.util.logging.Logger;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -29,6 +30,7 @@ import com.google.gson.JsonParser;
 public class FTLAutosaveManager extends JFrame {
     private static final long serialVersionUID = 1L;
 
+    private final transient Logger logger = Logger.getLogger(getClass().getName());
     private final JSpinner intervalSpinner;
     private final JButton playButton;
     private final JButton restartButton;
@@ -41,6 +43,13 @@ public class FTLAutosaveManager extends JFrame {
     private final File ftlFolder = new File(userHome, "Documents/My Games/FasterThanLight");
     private final File autosaveFolder = new File(userHome, "Documents/My Games/autosave");
     private final File backupFolder = new File(userHome, "Documents/My Games/backup");
+
+    private static final String CLICK_SOUND = "click.wav";
+    private static final String RESTORE_SOUND = "restore.wav";
+    private static final String CANCEL_SOUND = "cancel.wav";
+    private static final String INTERVAL_STRING = "interval";
+    private static final String SHORTCUT_PATH = "shortcut_path";
+    private static final String ERROR_STRING= "Error";
 
     private final Timer backupTimer = new Timer(true);
     private final Map<String, AudioInputStream> soundMap = new HashMap<>();
@@ -57,7 +66,7 @@ public class FTLAutosaveManager extends JFrame {
         try {
             setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("icon.png"))).getImage());
         } catch (Exception e) {
-            System.out.println("Icon not found.");
+            logger.info("Icon not found.");
         }
 
         JLayeredPane layeredPane = new JLayeredPane();
@@ -69,7 +78,7 @@ public class FTLAutosaveManager extends JFrame {
             BufferedImage bgImage = ImageIO.read(Objects.requireNonNull(getClass().getResourceAsStream("/bg_small.jpg")));
             backgroundLabel.setIcon(new ImageIcon(bgImage));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
         layeredPane.add(backgroundLabel, JLayeredPane.DEFAULT_LAYER);
 
@@ -78,7 +87,7 @@ public class FTLAutosaveManager extends JFrame {
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(customFont);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
 
         JPanel controlPanel = new JPanel();
@@ -118,7 +127,7 @@ public class FTLAutosaveManager extends JFrame {
         playButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                playSound("click.wav");
+                playSound(CLICK_SOUND);
                 play();
             }
         });
@@ -132,7 +141,7 @@ public class FTLAutosaveManager extends JFrame {
         restartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                playSound("restore.wav");
+                playSound(RESTORE_SOUND);
                 restart();
             }
         });
@@ -146,7 +155,7 @@ public class FTLAutosaveManager extends JFrame {
         restoreButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                playSound("click.wav");
+                playSound(CLICK_SOUND);
                 showRestoreUI();
             }
         });
@@ -169,7 +178,7 @@ public class FTLAutosaveManager extends JFrame {
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                playSound("cancel.wav");
+                playSound(CANCEL_SOUND);
                 hideRestoreUI();
             }
         });
@@ -217,9 +226,9 @@ public class FTLAutosaveManager extends JFrame {
     }
 
     private void preloadSounds() {
-        preloadSound("restore.wav");
-        preloadSound("click.wav");
-        preloadSound("cancel.wav");
+        preloadSound(RESTORE_SOUND);
+        preloadSound(CLICK_SOUND);
+        preloadSound(CANCEL_SOUND);
     }
 
     private void preloadSound(String soundFileName) {
@@ -228,7 +237,7 @@ public class FTLAutosaveManager extends JFrame {
             AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
             soundMap.put(soundFileName, audioStream);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
     }
 
@@ -248,7 +257,7 @@ public class FTLAutosaveManager extends JFrame {
 
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
     }
 
@@ -259,7 +268,7 @@ public class FTLAutosaveManager extends JFrame {
             ImageIcon linkIcon = new ImageIcon(Objects.requireNonNull(getClass().getClassLoader().getResource("github.png")));
             linkLabel.setIcon(linkIcon);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
 
         linkLabel.setBounds(15, getHeight() - 50, 50, 50);
@@ -285,15 +294,15 @@ public class FTLAutosaveManager extends JFrame {
             try (FileReader reader = new FileReader(autosaveConfigFile)) {
                 json = JsonParser.parseReader(reader).getAsJsonObject();
             } catch (IOException | IllegalStateException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
         }
-        json.addProperty("interval", interval);
+        json.addProperty(INTERVAL_STRING, interval);
 
         try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
             writer.write(json.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
     }
 
@@ -301,11 +310,11 @@ public class FTLAutosaveManager extends JFrame {
         if (autosaveConfigFile.exists()) {
             try (FileReader reader = new FileReader(autosaveConfigFile)) {
                 JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                if (json != null && json.has("interval") && !json.get("interval").isJsonNull()) {
-                    return json.get("interval").getAsInt();
+                if (json != null && json.has(INTERVAL_STRING) && !json.get(INTERVAL_STRING).isJsonNull()) {
+                    return json.get(INTERVAL_STRING).getAsInt();
                 }
             } catch (IOException | IllegalStateException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
         }
         return 5;
@@ -330,7 +339,7 @@ public class FTLAutosaveManager extends JFrame {
                     String selectedFolder = (String) backupDropdown.getSelectedItem();
                     if (selectedFolder != null && !"Select the backup".equals(selectedFolder)) {
                         restoreSelectedBackup(selectedFolder);
-                        playSound("restore.wav");
+                        playSound(RESTORE_SOUND);
                         updateButtonStates();
                     }
                 }
@@ -348,7 +357,7 @@ public class FTLAutosaveManager extends JFrame {
     private void restoreSelectedBackup(String folderName) {
         File selectedBackupFolder = new File(backupFolder, folderName);
         copyFolder(selectedBackupFolder, ftlFolder);
-        System.out.println("Restored backup from " + folderName);
+        logger.info("Restored backup from " + folderName);
         hideRestoreUI();
     }
 
@@ -382,12 +391,12 @@ public class FTLAutosaveManager extends JFrame {
             try (FileReader reader = new FileReader(autosaveConfigFile)) {
                 json = JsonParser.parseReader(reader).getAsJsonObject();
             } catch (IOException | IllegalStateException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
         }
 
-        if (json.has("shortcut_path") && !json.get("shortcut_path").isJsonNull()) {
-            String shortcutPath = json.get("shortcut_path").getAsString();
+        if (json.has(SHORTCUT_PATH) && !json.get(SHORTCUT_PATH).isJsonNull()) {
+            String shortcutPath = json.get(SHORTCUT_PATH).getAsString();
             if (new File(shortcutPath).exists()) {
                 return shortcutPath;
             }
@@ -401,7 +410,7 @@ public class FTLAutosaveManager extends JFrame {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
 
         JFileChooser fileChooser = new JFileChooser();
@@ -409,11 +418,11 @@ public class FTLAutosaveManager extends JFrame {
         int result = fileChooser.showOpenDialog(this);
         if (result == JFileChooser.APPROVE_OPTION) {
             String shortcutPath = fileChooser.getSelectedFile().getAbsolutePath();
-            json.addProperty("shortcut_path", shortcutPath);
+            json.addProperty(SHORTCUT_PATH, shortcutPath);
             try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
                 writer.write(json.toString());
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
             return shortcutPath;
         }
@@ -429,19 +438,19 @@ public class FTLAutosaveManager extends JFrame {
             backupFolder.mkdirs();
         }
         if (!autosaveConfigFile.getParentFile().exists()) {
-            System.out.println("Creating directory: " + autosaveConfigFile.getParentFile().getAbsolutePath());
+            logger.info("Creating directory: " + autosaveConfigFile.getParentFile().getAbsolutePath());
             autosaveConfigFile.getParentFile().mkdirs();
         }
 
         if (!autosaveConfigFile.exists()) {
             try {
                 if (autosaveConfigFile.createNewFile()) {
-                    System.out.println("Created file: " + autosaveConfigFile.getAbsolutePath());
+                    logger.info("Created file: " + autosaveConfigFile.getAbsolutePath());
                 } else {
-                    System.out.println("File already exists: " + autosaveConfigFile.getAbsolutePath());
+                    logger.info("File already exists: " + autosaveConfigFile.getAbsolutePath());
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
         }
     }
@@ -469,7 +478,7 @@ public class FTLAutosaveManager extends JFrame {
             process.waitFor();
             return targetPath;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
             return null;
         }
     }
@@ -478,14 +487,14 @@ public class FTLAutosaveManager extends JFrame {
         ensureFoldersExist();
         String shortcutPath = getShortcutPath();
         if (shortcutPath == null) {
-            JOptionPane.showMessageDialog(this, "FTL shortcut not found or not selected.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "FTL shortcut not found or not selected.", ERROR_STRING, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
             String targetPath = resolveShortcutTarget(shortcutPath);
             if (targetPath == null) {
-                JOptionPane.showMessageDialog(this, "Failed to resolve shortcut target.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Failed to resolve shortcut target.", ERROR_STRING, JOptionPane.ERROR_MESSAGE);
                 deleteShortcutPath();
                 return;
             }
@@ -498,22 +507,22 @@ public class FTLAutosaveManager extends JFrame {
             }
 
             int intervalMinutes = (int) intervalSpinner.getValue();
-            System.out.println("Backup interval set to " + intervalMinutes + " minutes.");
+            logger.info("Backup interval set to " + intervalMinutes + " minutes.");
             backupTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
                     copyFolder(ftlFolder, autosaveFolder);
                     createBackup();
-                    System.out.println("Backup and copy operation completed.");
+                    logger.info("Backup and copy operation completed.");
                     updateButtonStates();
                 }
             }, 0, (long) intervalMinutes * 60 * 1000);
 
             Runtime.getRuntime().exec(targetPath);
-            System.out.println("FTL has been launched successfully.");
+            logger.info("FTL has been launched successfully.");
         } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Failed to run FTL. Reason: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            logger.info(e.getMessage());
+            JOptionPane.showMessageDialog(this, "Failed to run FTL. Reason: " + e.getMessage(), ERROR_STRING, JOptionPane.ERROR_MESSAGE);
             deleteShortcutPath();
         }
     }
@@ -535,20 +544,20 @@ public class FTLAutosaveManager extends JFrame {
             try (FileReader reader = new FileReader(autosaveConfigFile)) {
                 json = JsonParser.parseReader(reader).getAsJsonObject();
             } catch (IOException | IllegalStateException e) {
-                e.printStackTrace();
+                logger.info(e.getMessage());
             }
         }
-        json.remove("shortcut_path");
+        json.remove(SHORTCUT_PATH);
         try (FileWriter writer = new FileWriter(autosaveConfigFile)) {
             writer.write(json.toString());
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
     }
 
     private void restart() {
         copyFolder(autosaveFolder, ftlFolder);
-        System.out.println("Restart operation completed successfully.");
+        logger.info("Restart operation completed successfully.");
     }
 
     private void copyFolder(File sourceFolder, File targetFolder) {
@@ -556,7 +565,7 @@ public class FTLAutosaveManager extends JFrame {
             deleteFolderContents(targetFolder);
             copyFiles(sourceFolder, targetFolder);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.info(e.getMessage());
         }
     }
 
@@ -574,7 +583,7 @@ public class FTLAutosaveManager extends JFrame {
                     try {
                         Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        logger.info(e.getMessage());
                     }
                 });
     }
